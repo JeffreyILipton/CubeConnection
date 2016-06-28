@@ -18,8 +18,10 @@ class ConnectionManager(object):
         self.cubes={}
         self.updated = False
         self.lasttime = 0
+        self.do_callback = False
         for cube_id in initial_cube_id_list:
             cubes[cube_id] = Cube(cube_id)
+
 
 
     def parseState(self,message_array):
