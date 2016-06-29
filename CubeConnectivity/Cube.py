@@ -18,6 +18,8 @@ class Cube(object):
         history_len = 10
         self.lightSensorHistory= np.zeros((history_len,6),dtype = 'bool')
         self.faceUpHistory = np.zeros((history_len),dtype = 'int')
+        self.faceUpHistory.fill(-1)
+        
 
 
     def _faceLEDBool(self,id,cmd):
@@ -32,6 +34,9 @@ class Cube(object):
         self.pub(message)
         pass
 
+    def setAllFaceLEDs(self,cmd):
+        for id in range(0,6):self.faceLEDs(cmd)
+
     def faceLEDs(self,id,cmd):
         if type(cmd)==type(True): self._faceLEDBool(id,cmd)
         elif len(cmd)==4: self._faceLEDArray(id,cmd)
@@ -42,3 +47,19 @@ class Cube(object):
 
     def setMostRecentFaceUp(self,id):
         self.faceUpHistory = np.hstack((id,self.faceUpHistory[:-1]))
+
+    def getMostRecentLightSensorState(self):
+        return self.lightSensorHistory[0,:]
+
+    def getMostRecentFaceUp(self):
+        return self.faceUpHistory[0]
+
+def faceUpToDown(face):
+    faces = { 0:2,
+              1:3,
+              2:0,
+              3:1,
+              4:5,
+              5:4
+            }
+    return faces[face]
