@@ -82,7 +82,7 @@ class ConnectionManager(object):
                 cube.faceLEDs(True)
                 ## pause for the signal to go through?
                 self.updateStates()
-                connection = DiffStates(self.cubes)
+                connection = DiffStates(self.cubes)[0]
                 if len(connection)>0:
                     cube.connectFace(face,connection)
                     other_cube = self.cubes[connection[0]]
@@ -95,8 +95,42 @@ class ConnectionManager(object):
             cube = self.cubes[cube_id]
             cube.unknown_faces = cube.faceConnections.keys()
 
+        #prune to get only 1/2 of each connected pair
+        for cube_id in self.cubes.keys():
+            cube = self.cubes[cube_id]
+            for face in cube.unknown_faces:
+                (other_id,other_face) = cube.faceConnections[face]
+                other = self.cubes[other_id]
+                other.unknown_faces = [x for x in other.unknown_faces if x!=other_face]
+        
+        #turn on each cubes light
+        cmds = [ [1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]
+        for led in range(0,4):
+            cmd = cmds[led]
+            angle = LEDToAngle[led]
+            #turn on each remaining faces light
+            for cube_id in self.cubes.keys():
+                cube = self.cubes[cube_id]
+                for face in cube.unknown_faces:
+                    cube.faceLEDs(face,cmd)
+            #get the new state
+            self.updateStates()
+            #find who saw this LED
+            cubes_that_saw_the_lights = DiffStates(self.cubes)
+            for cube_face_pair in cubes_that_saw_the_lights:
+                # the pair saw the connection, update the angle
+                cube_id,face = cube_face_pair
+                connected_cube = self.cubes[cube_id]
+                connection = connected_cube.faceConnections[face]
+                new_connection = (connection[0],connection[1],angle)
+                connected_cube.faceConnections[face] = new_connection
+                
+                lit_cube = self.cubes[connection[0]]
+                lit_connection = lit_cube.faceConnections[connection[1]]
+                new_lit_connection = (lit_connection[0],lit_connection[1],angle)
+                lit_cube.faceConnections[connection[1]] = new_lit_connection
 
-                ###
+        # now we have the correct connection list.
 
 
 
@@ -116,7 +150,10 @@ def DiffStates(cube_dict):
             # should be able to return now
     if len(cubes_that_saw_the_light)>1 : print "multiple cubes saw the light"
             
-    return cubes_that_saw_the_light[0]
+    return cubes_that_saw_the_light
 
+def LEDToAngle(i):
+    vals = [0,90,180,270]
+    return vals[i]
 
     
