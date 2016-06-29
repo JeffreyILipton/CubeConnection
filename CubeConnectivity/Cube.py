@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 import os
 import sys
 from collections import deque
@@ -19,7 +19,9 @@ class Cube(object):
         self.lightSensorHistory= np.zeros((history_len,6),dtype = 'bool')
         self.faceUpHistory = np.zeros((history_len),dtype = 'int')
         self.faceUpHistory.fill(-1)
-        
+        self.faceConnections={0:(),1:(),2:(),3:(),4:(),5:()}
+        self.unknown_faces=range(0,6)
+        self.base_state = np.zeros((history_len),dtype = 'bool')
 
 
     def _faceLEDBool(self,id,cmd):
@@ -31,8 +33,9 @@ class Cube(object):
     def _faceLEDArray(self,id,cmd):
         '''sets the LEDs for face based on the cmd array of length 4'''
         message = Int8MultiArray()
+        #### MAKE MESSAGE
         self.pub(message)
-        pass
+        
 
     def setAllFaceLEDs(self,cmd):
         for id in range(0,6):self.faceLEDs(cmd)
@@ -41,6 +44,9 @@ class Cube(object):
         if type(cmd)==type(True): self._faceLEDBool(id,cmd)
         elif len(cmd)==4: self._faceLEDArray(id,cmd)
         
+    def connectFace(self,id,connection):
+        self.unknown_faces = [x for x in self.unknown_faces if x!=id]
+        self.faceConnections[id] = connection
 
     def setMostRecentLightSensorState(self,state):
         self.lightSensorHistory = np.vstack((state,self.lightSensorHistory[:-1,:])).astype(bool)
