@@ -14,7 +14,7 @@ class ConnectionManager(object):
     def __init__(self,initial_cube_id_list):
         rospy.init_node('ConnectionManager')
         self.channel = 'mblocks_light'
-        self.channel_type = numpy_msg(Int8MultiArray)
+        self.channel_type = numpy_msg(Int32MultiArray)
         self.state_sub =  rospy.Suscriber(self.channel,self.channel_type,self.parseState)
         
         self.cubes={}
@@ -43,6 +43,7 @@ class ConnectionManager(object):
                 self.cubes[cube_id] = Cube(cube_id)
             faceup = row[1]
             sensors = row[2:]
+            # is this the truth table i want or sensors>
             sensors = sensors<self.ambient_threshold
             cube = self.cubes[cube_id]
             cube.setMostRecentFaceUp(faceup)
@@ -58,7 +59,7 @@ class ConnectionManager(object):
         self.state_sub.unregister()
         #turn off all LEDs
         for cube_id in self.cubes.keys():
-            self.cubes[cube_id].faceLEDs(False)
+            self.cubes[cube_id].setAllFaceLEDs(False)
         # get the state of the system with all lights off
         self.updateStates()
 
@@ -79,7 +80,7 @@ class ConnectionManager(object):
             cube = self.cubes[cube_id]
             faces = cube_faces_to_test[cube_id]
             for face in faces:
-                cube.faceLEDs(True)
+                cube.faceLEDs(face,True)
                 ## pause for the signal to go through?
                 self.updateStates()
                 connection = DiffStates(self.cubes)
@@ -87,6 +88,7 @@ class ConnectionManager(object):
                     cube.connectFace(face,connection)
                     other_cube = self.cubes[connection[0]]
                     other_cube.connectFace(connection[1],(cube_id,face))
+                    cube_faces_to_test[connection[0]] = [x for x in cube_faces_to_test[connection[0]] if x!= connection[1]]
         #We now have all of the connections
         
         # now we can orient the cubes
@@ -95,6 +97,10 @@ class ConnectionManager(object):
             cube = self.cubes[cube_id]
             cube.unknown_faces = cube.faceConnections.keys()
 
+        # for all of the connection, turn on the LEDs of one of the faces in the order 0 1 2 3
+
+        # compare with the change in record of the other faces light
+        # determine rotations
 
                 ###
 

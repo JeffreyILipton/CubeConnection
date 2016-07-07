@@ -9,7 +9,7 @@ if os.name!='nt':
 
 
 class Cube(object):
-    '''This is how '''
+    '''This is how to interface with a cube'''
     def __init__(self,id,downface=None):
         self.id = id
         self.light_channel = "/cube_%s/serial"%id
