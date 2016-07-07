@@ -41,7 +41,7 @@ class ConnectionManager(object):
             cube_id = row[0]
             if cube_id not in self.cubes.keys():
                 self.cubes[cube_id] = Cube(cube_id)
-            faceup = row[1]
+            faceup = row[1]-1 #1-6 or 0-5
             sensors = row[2:]
             # is this the truth table i want or sensors>
             sensors = sensors<self.ambient_threshold
