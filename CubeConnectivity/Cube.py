@@ -32,8 +32,8 @@ class Cube(object):
 
     def _faceLEDArray(self,id,cmd):
         '''sets the LEDs for face based on the cmd array of length 4'''
-        message = Int8MultiArray()
-        #### MAKE MESSAGE
+        vals = [int(x) for x in cmd]
+        message = "irled_%i_%i%i%i%i"%(id,vals[0],vals[1],vals[2],vals[3])
         self.pub(message)
         
 
